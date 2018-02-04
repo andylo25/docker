@@ -1,5 +1,8 @@
 #!/bin/bash
-ufw disable
+setenforce 0
+systemctl disable firewalld
+systemctl stop firewalld
+sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 swapoff -a
 cat >> /etc/sysctl.d/k8s.conf <<EOF
 net.bridge.bridge-nf-call-ip6tables = 1
@@ -7,14 +10,8 @@ net.bridge.bridge-nf-call-iptables = 1
 vm.swappiness=0
 EOF
 sysctl -p /etc/sysctl.d/k8s.conf
-apt-get install -y -q socat ebtables ethtool
-dpkg -i kubernetes-cni_0.5.1-00_amd64.deb
-dpkg -i kubelet_1.8.7-00_amd64.deb
-dpkg -i kubectl_1.8.7-00_amd64.deb
-dpkg -i kubeadm_1.8.7-00_amd64.deb
-systemctl enable kubelet
-systemctl start kubelet
-
+yum install -y socat ebtables ethtool
+rpm -ivh kubernetes-cni-0.5.1-0.x86_64.rpm kubelet-1.8.7-0.x86_64.rpm kubectl-1.8.7-0.x86_64.rpm kubeadm-1.8.7-0.x86_64.rpm
 images=(kube-proxy-amd64:v1.8.7 \
 pause-amd64:3.0 \
 kubernetes-dashboard-amd64:1.8.1)
